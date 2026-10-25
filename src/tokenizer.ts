@@ -36,9 +36,14 @@ export function tokenize(text: string): Token[] {
         if ("1234567890.".includes(char)) {
             number += char;
             if (!"1234567890.".includes(text[i + 1])) {
+                if (isNaN(Number(number))) {
+                    throw new Error(`Invalid number "${number}" at position ${i - (number.length - 1)}.`);
+                }
                 tokens.push({ kind: "number", value: Number(number) });
                 number = "";
             }
+        } else {
+            throw new Error(`Unknown character "${char}" at position ${i + 1}`);
         }
         i++
     }
