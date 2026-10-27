@@ -45,8 +45,9 @@ export function tokenize(text: string): Token[] {
             }
             i++;
         }
-
-        tokens.push({ kind: "number", value: Number(text.slice(start, i)) });
+        const numberText: string = text.slice(start, i);
+        if (numberText === ".") throw new Error(`Unknown number "${numberText}" at position ${start + 1}.`);
+        tokens.push({ kind: "number", value: Number(numberText) });
     }
 
     return tokens;
