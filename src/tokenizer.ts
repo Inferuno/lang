@@ -11,7 +11,7 @@ const ops: Partial<Record<string, SymbolKind>> = {
     '^': "caret"
 };
 
-export type { Token };
+export type { Token, SymbolKind };
 
 /**
 The tokenize function turns a text string (of arithmetic) into tokens.
