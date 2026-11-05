@@ -10,10 +10,11 @@ const precedence: Partial<Record<SymbolKind, number>> = {
 };
 
 export function parse(tokens: Token[]): Tree {
+    if (tokens.length <= 0) throw new Error("Expected a number.")
     if (tokens.length === 1) {
         const token = tokens[0];
 
-        if (token.kind !== "number") throw new Error(`Unknown expression "${token}".`);
+        if (token.kind !== "number") throw new Error(`Unknown expression "${token.kind}".`);
         return token.value;
     }
 
@@ -23,6 +24,11 @@ export function parse(tokens: Token[]): Tree {
 
     for (let i = 0; i < tokens.length; i++) {
         const tokenKind = tokens[i].kind;
+
+        const isNegativeSign: boolean = tokenKind === "minus" && (i === 0 || (tokens[i - 1].kind !== "number" && tokens[i - 1].kind !== "rparen"));
+
+        if (isNegativeSign) continue;
+
         if (tokenKind === "number") continue;
 
         if (tokenKind === "lparen") depth += 1;
@@ -36,6 +42,10 @@ export function parse(tokens: Token[]): Tree {
                 cutPrecedence = precedence[tokenKind];
             }
         }
+    }
+
+    if (cutIndex === -1 && tokens[0].kind === "minus") {
+        return { op: "minus", left: 0, right: parse(tokens.slice(1)) };
     }
 
     if (cutIndex === -1) return parse(tokens.slice(1, tokens.length - 1));
