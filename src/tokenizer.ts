@@ -1,5 +1,7 @@
+import { LangError } from "./error.ts";
+
 type SymbolKind = "plus" | "minus" | "asterisk" | "slash" | "lparen" | "rparen" | "caret";
-type Token = { kind: "number"; value: number } | { kind: SymbolKind };
+type Token = { kind: "number"; value: number; position: number; text: string } | { kind: SymbolKind; position: number; text: string };
 
 const ops: Partial<Record<string, SymbolKind>> = {
     '+': "plus",
@@ -47,27 +49,27 @@ export function tokenize(text: string): Token[] {
         }
 
         if (ops[char]) {
-            tokens.push({ kind: ops[char] });
+            tokens.push({ kind: ops[char], position: i + 1, text: char });
             i++;
             continue;
         }
 
         if (!"1234567890.".includes(char)) {
-            throw new Error(`Unknown character "${char}" at position ${i + 1}.`);
+            throw new LangError(`Unknown character "${char}".`, i + 1);
         }
         const start: number = i;
         let seenDot: boolean = false;
         while (i < text.length && "1234567890.".includes(text[i])) {
             if (text[i] === "." && !seenDot) seenDot = true;
             else if (text[i] === ".") {
-                throw new Error(`Unknown number "${text.slice(start, i + 1)}" at position ${i + 1}.`);
+                throw new LangError(`Unknown number "${text.slice(start, i + 1)}".`, i + 1);
             }
             i++;
         }
 
         const numberText: string = text.slice(start, i);
-        if (numberText === ".") throw new Error(`Unknown number "${numberText}" at position ${start + 1}.`);
-        tokens.push({ kind: "number", value: Number(numberText) });
+        if (numberText === ".") throw new LangError(`Unknown number "${numberText}".`, start + 1);
+        tokens.push({ kind: "number", value: Number(numberText), position: start + 1, text: numberText });
 
     }
 
